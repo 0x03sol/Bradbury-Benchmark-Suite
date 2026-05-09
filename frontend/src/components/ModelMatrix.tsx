@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiUrl } from '../api'
 
 type Model = {
   name: string
@@ -16,7 +17,7 @@ export default function ModelMatrix() {
   const [models, setModels] = useState<Model[]>(fallbackModels)
 
   useEffect(() => {
-    fetch('/api/models')
+    fetch(apiUrl('/api/models'))
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => { if (Array.isArray(data) && data.length > 0) setModels(data) })
       .catch(() => {})

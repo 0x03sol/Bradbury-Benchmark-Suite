@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiUrl } from '../api'
 import Heatmap from './Heatmap'
 import ModelMatrix from './ModelMatrix'
 import AppealTimeline from './AppealTimeline'
@@ -34,7 +35,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/summary')
+    fetch(apiUrl('/api/summary'))
       .then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()

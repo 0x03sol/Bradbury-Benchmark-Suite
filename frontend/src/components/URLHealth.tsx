@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiUrl } from '../api'
 
 type UrlEntry = {
   contract_address: string
@@ -24,7 +25,7 @@ export default function URLHealth() {
   const [urls, setUrls] = useState<UrlEntry[]>(fallbackUrls)
 
   useEffect(() => {
-    fetch('/api/url-health')
+    fetch(apiUrl('/api/url-health'))
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => { if (Array.isArray(data) && data.length > 0) setUrls(data) })
       .catch(() => {})

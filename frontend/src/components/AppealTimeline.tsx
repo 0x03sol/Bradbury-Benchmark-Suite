@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { apiUrl } from '../api'
 
 type TimelineEntry = {
   hour: string
@@ -25,7 +26,7 @@ export default function AppealTimeline() {
   const [timeline, setTimeline] = useState<TimelineEntry[]>(fallbackTimeline)
 
   useEffect(() => {
-    fetch('/api/appeals')
+    fetch(apiUrl('/api/appeals'))
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
       .then(data => { if (Array.isArray(data) && data.length > 0) setTimeline(data) })
       .catch(() => {})
