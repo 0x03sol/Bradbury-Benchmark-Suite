@@ -57,3 +57,6 @@ backend/reports/benchmark_data_v*.csv
 
 # --- Frontend bak ---
 *.bak
+
+# --- AI assistant internals ---
+.claude/
