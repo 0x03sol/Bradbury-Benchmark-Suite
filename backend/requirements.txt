@@ -13,5 +13,3 @@ numpy>=1.26.0
 flask>=3.0.0
 flask-cors>=4.0.0
 
-# GenLayer SDK (latest available on PyPI as of 2026-05-03)
-genlayer==0.0.1

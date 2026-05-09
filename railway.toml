@@ -3,5 +3,5 @@ builder = "nixpacks"
 buildCommand = "pip install -r backend/requirements.txt"
 
 [deploy]
-startCommand = "python backend/api.py"
+startCommand = "cd backend && python api.py"
 restartPolicyType = "on_failure"
