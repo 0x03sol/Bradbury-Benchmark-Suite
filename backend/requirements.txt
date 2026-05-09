@@ -1,0 +1,17 @@
+# Bradbury Benchmark Suite — Python Dependencies
+# Auto-detected: genlayer 0.0.1 from PyPI (placeholder release)
+# Primary blockchain interaction via web3.py and direct JSON-RPC
+
+web3>=7.16.0
+eth-account>=0.13.0
+requests>=2.32.0
+pandas>=2.2.0
+python-dotenv>=1.0.0
+aiohttp>=3.9.0
+pydantic>=2.7.0
+numpy>=1.26.0
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# GenLayer SDK (latest available on PyPI as of 2026-05-03)
+genlayer==0.0.1

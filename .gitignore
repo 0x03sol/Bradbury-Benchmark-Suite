@@ -1,0 +1,59 @@
+# --- Secrets & env ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.Python
+venv/
+.venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Node / Vite ---
+node_modules/
+dist/
+.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# --- Local dev artefacts (kept locally, never pushed) ---
+github/
+backend/data/*.log
+backend/data/*.bak
+backend/data/archive/
+backend/run_*.log
+backend/*.log
+
+# --- Generated artefacts ---
+# We KEEP the canonical final snapshot/report in git so reviewers can reproduce.
+# Discard intermediate runs:
+backend/data/results_v*.json
+backend/data/snapshot_*_2026*.csv
+!backend/data/snapshot_final_*.csv
+backend/data/snapshot_*_2026*.json
+!backend/data/snapshot_final_*.json
+backend/reports/research_report_2026*_*.md
+!backend/reports/research_report_20260509_174055.md
+backend/reports/benchmark_data_v*.csv
+!backend/reports/benchmark_data_final.csv
+
+# --- Frontend bak ---
+*.bak
