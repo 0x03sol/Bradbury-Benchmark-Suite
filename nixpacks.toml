@@ -5,10 +5,10 @@ nixPkgs = ["python311", "python311Packages.pip", "nodejs_20", "gcc"]
 
 [phases.install]
 cmds = [
-  "pip install --upgrade pip",
-  "pip install -r backend/requirements.txt",
+  "python -m venv --without-pip /opt/venv",
+  "pip install --break-system-packages --target /opt/venv/lib/python3.11/site-packages -r backend/requirements.txt",
   "cd frontend && npm ci && npm run build",
 ]
 
 [start]
-cmd = "cd backend && gunicorn -b 0.0.0.0:$PORT -w 2 --timeout 120 api:app"
+cmd = "export PATH=/opt/venv/bin:$PATH && export PYTHONPATH=/opt/venv/lib/python3.11/site-packages:$PYTHONPATH && cd backend && gunicorn -b 0.0.0.0:$PORT -w 2 --timeout 120 api:app"
