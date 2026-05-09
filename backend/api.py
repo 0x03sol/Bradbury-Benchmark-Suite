@@ -178,6 +178,6 @@ def api_url_health():
 if __name__ == "__main__":
     from src.config import ensure_dirs
     ensure_dirs()
-    port = int(os.getenv("API_PORT", "8000"))
+    port = int(os.getenv("PORT", os.getenv("API_PORT", "8000")))
     logger.info("Starting API server on port %d", port)
     app.run(host="0.0.0.0", port=port, debug=True)
