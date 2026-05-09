@@ -23,6 +23,7 @@ from src.explorer import ExplorerClient
 from src.collector import DataCollector
 from src.exporter import Exporter
 from src import research
+from src.research import extract_result_flag
 
 logging.basicConfig(
     level=getattr(logging, os.getenv("LOG_LEVEL", "INFO")),
@@ -142,32 +143,24 @@ def cmd_collect(args: argparse.Namespace) -> None:
     print(f"Snapshot: {csv_path}")
 
 
-def _flag(result, key: str) -> bool:
-    """Pull a boolean research flag out of a result cell that may be a dict or its repr."""
-    if isinstance(result, dict):
-        return result.get(key) is True
-    if isinstance(result, str):
-        return f"'{key}': True" in result
-    return False
-
-
 def cmd_report(args: argparse.Namespace) -> None:
     ensure_dirs()
-    snapshots = sorted(PATHS.data_dir.glob("snapshot_*.json"))
+    snapshots = list(PATHS.data_dir.glob("snapshot_*.json"))
     if not snapshots:
         logger.error("No snapshots found. Run 'collect' first.")
         sys.exit(1)
+    latest = max(snapshots, key=lambda p: p.stat().st_mtime)
 
     collector = DataCollector()
-    collector.load_snapshot(snapshots[-1])
+    collector.load_snapshot(latest)
     df = collector.to_dataframe()
 
     total = len(df)
     if total and "result" in df.columns:
         df = df.copy()
-        df["consensus_converged"] = df["result"].apply(lambda r: _flag(r, "consensus_converged"))
-        df["eq_principle_passed"] = df["result"].apply(lambda r: _flag(r, "eq_principle_passed"))
-        df["execution_success"] = df["result"].apply(lambda r: _flag(r, "execution_success"))
+        df["consensus_converged"] = df["result"].apply(lambda r: extract_result_flag(r, "consensus_converged"))
+        df["eq_principle_passed"] = df["result"].apply(lambda r: extract_result_flag(r, "eq_principle_passed"))
+        df["execution_success"] = df["result"].apply(lambda r: extract_result_flag(r, "execution_success"))
     else:
         for c in ("consensus_converged", "eq_principle_passed", "execution_success"):
             df[c] = False

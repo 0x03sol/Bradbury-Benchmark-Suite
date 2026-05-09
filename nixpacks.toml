@@ -1,4 +1,14 @@
 providers = ["python"]
 
+[phases.setup]
+nixPkgs = ["python311", "python311Packages.pip", "nodejs_20", "gcc"]
+
 [phases.install]
-cmds = ["python -m pip install -r backend/requirements.txt"]
+cmds = [
+  "pip install --upgrade pip",
+  "pip install -r backend/requirements.txt",
+  "cd frontend && npm ci && npm run build",
+]
+
+[start]
+cmd = "cd backend && gunicorn -b 0.0.0.0:$PORT -w 2 --timeout 120 api:app"

@@ -28,7 +28,7 @@ class NetworkConfig:
 @dataclass(frozen=True)
 class BenchmarkConfig:
     """Immutable benchmark execution parameters."""
-    iterations: int = field(default_factory=lambda: int(os.getenv("BENCHMARK_ITERATIONS", "100")))
+    iterations: int = field(default_factory=lambda: int(os.getenv("BENCHMARK_ITERATIONS", "5")))
     validator_counts: Tuple[int, ...] = field(default_factory=lambda: tuple(int(x.strip()) for x in os.getenv("VALIDATOR_COUNTS", "3,5,7,11").split(",")))
     default_timeout_seconds: int = field(default_factory=lambda: int(os.getenv("DEFAULT_TIMEOUT_SECONDS", "300")))
     models: Tuple[str, ...] = field(default_factory=lambda: tuple(x.strip() for x in os.getenv("MODELS", "openai/gpt-4,anthropic/claude-3-opus,meta/llama-3-70b").split(",")))

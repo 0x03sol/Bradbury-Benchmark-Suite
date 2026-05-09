@@ -10,6 +10,15 @@ import pandas as pd
 import numpy as np
 
 
+def extract_result_flag(result: Any, key: str) -> bool:
+    """Pull a boolean flag out of a result cell that may be a dict or its repr."""
+    if isinstance(result, dict):
+        return result.get(key) is True
+    if isinstance(result, str):
+        return f"'{key}': True" in result
+    return False
+
+
 def compute_convergence_matrix(df: pd.DataFrame) -> pd.DataFrame:
     """Success rate and latency pivot by principle vs model."""
     if df.empty or "principle" not in df.columns or "model" not in df.columns:

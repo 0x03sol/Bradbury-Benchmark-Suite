@@ -2,14 +2,16 @@
 Bradbury Benchmark Suite — API Server
 
 Lightweight Flask server that serves benchmark data to the frontend dashboard.
+Production deployment uses gunicorn (see Procfile / railway.toml).
 """
 
 import json
 import logging
 import os
+from functools import lru_cache
 from pathlib import Path
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory, abort
 from flask_cors import CORS
 
 from dotenv import load_dotenv
@@ -18,6 +20,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from src.config import PATHS
 from src.collector import DataCollector
+from src.research import extract_result_flag, compute_url_health
 
 logging.basicConfig(
     level=getattr(logging, os.getenv("LOG_LEVEL", "INFO")),
@@ -26,43 +29,89 @@ logging.basicConfig(
 )
 logger = logging.getLogger("api")
 
-app = Flask(__name__)
-CORS(app)
+_FRONTEND_DIST = Path(__file__).resolve().parents[1] / "frontend" / "dist"
+
+app = Flask(
+    __name__,
+    static_folder=str(_FRONTEND_DIST) if _FRONTEND_DIST.exists() else None,
+    static_url_path="",
+)
+
+# CORS allowlist — comma-separated origins via FRONTEND_ORIGIN, default to localhost dev.
+_origins = [o.strip() for o in os.getenv(
+    "FRONTEND_ORIGIN",
+    "http://localhost:3000,http://localhost:5173",
+).split(",") if o.strip()]
+CORS(app, resources={r"/api/*": {"origins": _origins}})
 
 
 def _latest_snapshot():
-    """Find the most recent snapshot JSON file."""
-    snapshots = sorted(PATHS.data_dir.glob("snapshot_*.json"))
-    return snapshots[-1] if snapshots else None
+    """Find the most recent snapshot JSON file by modification time."""
+    snapshots = list(PATHS.data_dir.glob("snapshot_*.json"))
+    if not snapshots:
+        return None
+    return max(snapshots, key=lambda p: p.stat().st_mtime)
 
 
-def _extract_flag(result, key: str) -> bool:
-    """Pull a boolean flag out of the (possibly stringified) result dict."""
-    if isinstance(result, dict):
-        return result.get(key) is True
-    if isinstance(result, str):
-        # The DataFrame may have stringified the dict; do a quick substring check.
-        return f"'{key}': True" in result
-    return False
+@lru_cache(maxsize=8)
+def _load_snapshot_cached(path_str: str, mtime_ns: int):
+    """Cache snapshot DataFrames keyed on (path, mtime). Bypasses re-parse on hot reads."""
+    collector = DataCollector()
+    collector.load_snapshot(Path(path_str))
+    return collector.to_dataframe()
+
+
+def _current_df():
+    """Return (snapshot_path, dataframe) for the latest snapshot, or (None, None)."""
+    snapshot = _latest_snapshot()
+    if snapshot is None:
+        return None, None
+    df = _load_snapshot_cached(str(snapshot), snapshot.stat().st_mtime_ns)
+    return snapshot, df
+
+
+@app.route("/api/health")
+def api_health():
+    """Liveness probe for platform health checks."""
+    return jsonify({"status": "ok"})
+
+
+@app.route("/")
+def serve_index():
+    """Serve the built React dashboard at the root URL."""
+    if _FRONTEND_DIST.exists() and (_FRONTEND_DIST / "index.html").exists():
+        return send_from_directory(str(_FRONTEND_DIST), "index.html")
+    return jsonify({
+        "service": "Bradbury Benchmark Suite API",
+        "endpoints": ["/api/health", "/api/summary", "/api/models", "/api/appeals", "/api/url-health"],
+    })
+
+
+@app.route("/<path:filename>")
+def serve_static(filename: str):
+    """Serve frontend assets (JS, CSS, images) and SPA-fallback to index.html."""
+    if not _FRONTEND_DIST.exists():
+        abort(404)
+    target = _FRONTEND_DIST / filename
+    if target.is_file():
+        return send_from_directory(str(_FRONTEND_DIST), filename)
+    # SPA fallback: any unknown non-API path returns the React shell.
+    return send_from_directory(str(_FRONTEND_DIST), "index.html")
 
 
 @app.route("/api/summary")
 def api_summary():
-    snapshot = _latest_snapshot()
-    if not snapshot:
+    snapshot, df = _current_df()
+    if snapshot is None:
         return jsonify({"error": "No snapshot data available. Run 'collect' first."}), 404
 
-    collector = DataCollector()
-    collector.load_snapshot(snapshot)
-    df = collector.to_dataframe()
-
-    # Derive research flags per row (consensus convergence, eq pass, exec success)
     if "result" in df.columns:
         df = df.copy()
-        df["consensus_converged"] = df["result"].apply(lambda r: _extract_flag(r, "consensus_converged"))
-        df["eq_principle_passed"] = df["result"].apply(lambda r: _extract_flag(r, "eq_principle_passed"))
-        df["execution_success"] = df["result"].apply(lambda r: _extract_flag(r, "execution_success"))
+        df["consensus_converged"] = df["result"].apply(lambda r: extract_result_flag(r, "consensus_converged"))
+        df["eq_principle_passed"] = df["result"].apply(lambda r: extract_result_flag(r, "eq_principle_passed"))
+        df["execution_success"] = df["result"].apply(lambda r: extract_result_flag(r, "execution_success"))
     else:
+        df = df.copy()
         df["consensus_converged"] = False
         df["eq_principle_passed"] = False
         df["execution_success"] = False
@@ -70,7 +119,6 @@ def api_summary():
     total = len(df)
     successes = int(df["success"].sum()) if total else 0
 
-    # Manifest of deployed contracts (best-effort)
     manifest_path = PATHS.data_dir / "deployed_manifest.json"
     manifest = {}
     if manifest_path.exists():
@@ -89,6 +137,7 @@ def api_summary():
         "max_latency_ms": round(df["latency_ms"].max(), 2) if total else 0.0,
         "by_principle": {},
         "manifest": manifest,
+        "snapshot": snapshot.name,
     }
     for principle, group in df.groupby("principle"):
         n = len(group)
@@ -106,13 +155,9 @@ def api_summary():
 
 @app.route("/api/models")
 def api_models():
-    snapshot = _latest_snapshot()
-    if not snapshot:
+    snapshot, df = _current_df()
+    if snapshot is None:
         return jsonify([]), 404
-
-    collector = DataCollector()
-    collector.load_snapshot(snapshot)
-    df = collector.to_dataframe()
 
     if "model" not in df.columns:
         return jsonify([])
@@ -129,13 +174,9 @@ def api_models():
 
 @app.route("/api/appeals")
 def api_appeals():
-    snapshot = _latest_snapshot()
-    if not snapshot:
+    snapshot, df = _current_df()
+    if snapshot is None:
         return jsonify([]), 404
-
-    collector = DataCollector()
-    collector.load_snapshot(snapshot)
-    df = collector.to_dataframe()
 
     if "timestamp" not in df.columns or "appeal_count" not in df.columns:
         return jsonify([])
@@ -160,15 +201,10 @@ def api_appeals():
 
 @app.route("/api/url-health")
 def api_url_health():
-    snapshot = _latest_snapshot()
-    if not snapshot:
+    snapshot, df = _current_df()
+    if snapshot is None:
         return jsonify([]), 404
 
-    collector = DataCollector()
-    collector.load_snapshot(snapshot)
-    df = collector.to_dataframe()
-
-    from src.research import compute_url_health
     health_df = compute_url_health(df)
     if health_df.empty:
         return jsonify([])
@@ -179,5 +215,6 @@ if __name__ == "__main__":
     from src.config import ensure_dirs
     ensure_dirs()
     port = int(os.getenv("PORT", os.getenv("API_PORT", "8000")))
-    logger.info("Starting API server on port %d", port)
-    app.run(host="0.0.0.0", port=port, debug=True)
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    logger.info("Starting API server on port %d (debug=%s)", port, debug)
+    app.run(host="0.0.0.0", port=port, debug=debug)
