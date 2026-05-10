@@ -1,20 +1,18 @@
 providers = ["python"]
 
 [phases.setup]
-nixPkgs = ["python311", "python311Packages.pip", "nodejs_20", "gcc"]
+nixPkgs = ["python311", "python311Packages.pip", "gcc"]
 
 [phases.install]
 cmds = [
   "python -m venv --without-pip /opt/venv",
   "pip install --break-system-packages --target /opt/venv/lib/python3.11/site-packages -r backend/requirements.txt",
-  "cd frontend && npm ci",
 ]
 
-# Override Nixpacks' auto-detected Node build phase, which would otherwise
-# run `npm run build` at the repo root and fail (no root package.json).
-# The frontend bundle is produced here; Flask serves frontend/dist/ at /.
+# Override Nixpacks' auto-detected Node build phase — frontend lives on
+# Cloudflare Pages, this service is backend-only.
 [phases.build]
-cmds = ["cd frontend && npm run build"]
+cmds = ["echo 'Backend-only build; frontend deploys to Cloudflare Pages.'"]
 
 [start]
 cmd = "export PATH=/opt/venv/bin:$PATH && export PYTHONPATH=/opt/venv/lib/python3.11/site-packages:$PYTHONPATH && cd backend && gunicorn -b 0.0.0.0:$PORT -w 2 --timeout 120 api:app"

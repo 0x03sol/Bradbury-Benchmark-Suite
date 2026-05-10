@@ -106,25 +106,35 @@ Open <http://localhost:3000>. Vite proxies `/api/*` → `http://localhost:8000`.
 
 ---
 
-## Production deployment (Railway / Heroku)
+## Production deployment
 
-[`nixpacks.toml`](./nixpacks.toml) defines a **single-service deploy** that:
+**Split-host architecture: backend → Railway, frontend → Cloudflare Pages.**
 
-1. Installs Python deps from `backend/requirements.txt`
-2. Runs `npm ci && npm run build` in `frontend/` to produce `frontend/dist/`
-3. Starts **gunicorn** (2 workers, 120s timeout)
+### Backend on Railway
 
-Flask serves the built React dashboard at `/` and the JSON API at `/api/*`, so the Railway URL shows the live dashboard with no separate frontend host needed.
+[`nixpacks.toml`](./nixpacks.toml) builds a Python-only image and runs gunicorn (2 workers, 120s timeout). [`.railwayignore`](./.railwayignore) excludes `frontend/` so Nixpacks never auto-detects a Node provider.
 
-Required env vars:
+Required Railway env vars:
 
 | Name | Purpose |
 |---|---|
-| `PORT` | Provided by the platform; falls back to `API_PORT` (default `8000`) locally |
-| `FRONTEND_ORIGIN` | Comma-separated CORS allowlist; only needed if you split frontend onto a different host |
-| `PRIVATE_KEY` | Only needed if the deployed instance runs benchmarks; not required to serve a precomputed snapshot |
+| `PORT` | Provided by Railway automatically |
+| `FRONTEND_ORIGIN` | Your Cloudflare Pages URL, e.g. `https://bradbury-benchmark.pages.dev` |
+| `PRIVATE_KEY` | Only if the service runs benchmarks; not needed to serve a precomputed snapshot |
 
-If you prefer a split deploy (API on Railway, static frontend on Vercel/Netlify), build the frontend with `VITE_API_URL=https://api.example.com npm run build`.
+After deploy, expose the service publicly in Railway → Settings → Networking. Note the public URL (e.g. `https://bradbury-benchmark-production.up.railway.app`).
+
+### Frontend on Cloudflare Pages
+
+| Setting | Value |
+|---|---|
+| **Framework preset** | Vite |
+| **Build command** | `npm ci && npm run build` |
+| **Build output directory** | `dist` |
+| **Root directory** | `frontend` |
+| **Environment variable** | `VITE_API_URL=https://<your-railway-url>` |
+
+[`frontend/public/_redirects`](./frontend/public/_redirects) provides the SPA fallback (`/* → /index.html 200`) so client-side routes resolve correctly on Cloudflare Pages.
 
 ---
 
