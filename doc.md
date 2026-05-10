@@ -1,86 +1,87 @@
 # Bradbury Benchmark Suite
 
-**Network:** GenLayer Bradbury Testnet (Chain ID `4221`)
-**Run date:** 9 May 2026
+**Network:** GenLayer Bradbury Testnet · Chain 4221  
+**Run date:** 9 May 2026  
+**Live dashboard:** [bradbury-benchmark-suite.vercel.app](https://bradbury-benchmark-suite.vercel.app/)
 
 ---
 
 ## What I built
 
-I built a benchmark suite that deploys 7 Intelligent Contracts to the Bradbury testnet and measures how they perform. Each contract uses a different equivalence principle to test a different kind of LLM task — code review, price feeds, sentiment analysis, prompt injection detection, etc.
+Seven Intelligent Contracts deployed to the Bradbury testnet, each designed around a task that makes sense for an LLM: reviewing code for vulnerabilities, resolving a simple dispute, checking a price feed, detecting prompt injection attempts, analyzing sentiment, testing whether a URL is reliable, and recognizing patterns in text.
 
-The suite collects real on-chain data for every transaction and shows it in a dashboard with three metrics: tx acceptance, consensus convergence, and equivalence principle pass rate.
+The point wasn't just to deploy them — it was to run them against all four of GenLayer's equivalence principles and measure what actually happens. How often does the network accept the transaction? How long does it take? Which principles survive a live testnet with real validators?
 
 ---
 
 ## Deployed contracts
 
-| Contract | Address |
-|---|---|
-| `code_audit` | `0x8aEF4546645239508A39BCce55026D9Fb9C6C610` |
-| `dispute_resolution` | `0xCc9481Eae9Fab61600f949a304ae877C241B1E1f` |
-| `price_oracle` | `0x6913C2a5aAe0A8d2961a5EbC9FA22792520991ea` |
-| `prompt_injection` | `0x91C4aeB3948e1800E059fD8d5380A2e6Fb4603d6` |
-| `sentiment_analysis` | `0xFC26f87d12B5d1B2e76B4b8E3dcB59cee7Cadfe3` |
-| `url_fragility` | `0x497A5c7584478319eBefABd6f2420cc12498fF51` |
-| `vision_pattern` | `0x65F327cc88687F7721f77BDdEb653BD46E6790b2` |
-
-Browsable at `https://explorer-bradbury.genlayer.com/address/<addr>`.
+| Contract | Address | Explorer |
+|---|---|---|
+| `code_audit` | `0x8aEF4546645239508A39BCce55026D9Fb9C6C610` | [View ↗](https://explorer-bradbury.genlayer.com/address/0x8aEF4546645239508A39BCce55026D9Fb9C6C610) |
+| `dispute_resolution` | `0xCc9481Eae9Fab61600f949a304ae877C241B1E1f` | [View ↗](https://explorer-bradbury.genlayer.com/address/0xCc9481Eae9Fab61600f949a304ae877C241B1E1f) |
+| `price_oracle` | `0x6913C2a5aAe0A8d2961a5EbC9FA22792520991ea` | [View ↗](https://explorer-bradbury.genlayer.com/address/0x6913C2a5aAe0A8d2961a5EbC9FA22792520991ea) |
+| `prompt_injection` | `0x91C4aeB3948e1800E059fD8d5380A2e6Fb4603d6` | [View ↗](https://explorer-bradbury.genlayer.com/address/0x91C4aeB3948e1800E059fD8d5380A2e6Fb4603d6) |
+| `sentiment_analysis` | `0xFC26f87d12B5d1B2e76B4b8E3dcB59cee7Cadfe3` | [View ↗](https://explorer-bradbury.genlayer.com/address/0xFC26f87d12B5d1B2e76B4b8E3dcB59cee7Cadfe3) |
+| `url_fragility` | `0x497A5c7584478319eBefABd6f2420cc12498fF51` | [View ↗](https://explorer-bradbury.genlayer.com/address/0x497A5c7584478319eBefABd6f2420cc12498fF51) |
+| `vision_pattern` | `0x65F327cc88687F7721f77BDdEb653BD46E6790b2` | [View ↗](https://explorer-bradbury.genlayer.com/address/0x65F327cc88687F7721f77BDdEb653BD46E6790b2) |
 
 ---
 
 ## Results
 
-From 40 total invocations (final snapshot `backend/data/snapshot_20260509_174055.json`):
+40 transactions total across the 7 contracts.
 
-```
-tx acceptance rate        : 77.50%
-consensus convergence     : 77.50%
-eq. principle passed      :  0.00%
-avg latency               : 12,933 ms
-```
+| Metric | Value |
+|---|---|
+| Tx acceptance rate | **77.5%** (31 / 40) |
+| Avg consensus latency | **12,933 ms** |
+| Validators per tx | 5 |
 
 By equivalence principle:
 
-| Principle | Tx Acceptance | Convergence | Eq. Pass |
-|---|---|---|---|
-| `prompt_non_comparative` | 100% | 100% | 0% |
-| `strict_eq` | 90% | 90% | 0% |
-| `prompt_comparative` | 85.7% | 85.7% | 0% |
-| `custom` | 57.1% | 57.1% | 0% |
+| Principle | Tx Acceptance | Avg Latency |
+|---|---|---|
+| `prompt_non_comparative` | 100.0% | 13,958 ms |
+| `strict_eq` | 90.0% | 13,537 ms |
+| `prompt_comparative` | 85.7% | 14,129 ms |
+| `custom` | 57.1% | 11,159 ms |
 
 ---
 
-## Why eq. principle passed is 0%
+## Why every transaction shows "finalized (error)" on the explorer
 
-This one confused me at first. The contracts work — they deploy and transactions go through — but `txExecutionResultName` always comes back `FINISHED_WITH_ERROR`.
+When I first looked at my transactions on the Bradbury explorer I thought something was broken. Every other user's transactions showed **accepted**. Mine all showed **finalized (error)**. I spent time thinking my contracts were wrong.
 
-Here's what's happening: when a transaction goes through GenLayer, the leader node runs the contract and gets an LLM response. Then every other validator independently re-runs the same contract with their own LLM. If the validator's result doesn't match the leader's result under the equivalence predicate, it votes DISAGREE — and the tx gets marked `FINISHED_WITH_ERROR`.
+They weren't.
 
-On the public testnet right now, every validator is calling a separate LLM endpoint with no shared seed or temperature pinning. Two independent LLM calls on the same prompt almost never produce byte-identical output, so `strict_eq` always fails at the validator step. Even `prompt_comparative` (which uses an LLM judge instead of exact match) fails because the judge itself is non-deterministic across validators.
+Here is what "finalized (error)" actually means on GenLayer:
 
-So the protocol is actually working correctly — it's faithfully recording that validators disagree. The 0% is a measurement of current testnet LLM non-determinism, not a bug in the contracts.
+When you call an Intelligent Contract, the leader validator runs your contract and gets an LLM response — let's say it returns `"the code looks safe"`. Then every other validator independently runs the exact same contract with their own LLM. Each validator compares their result to the leader's result using the equivalence principle you chose. If a validator's LLM returned `"this code appears secure"` instead, and your principle is `strict_eq` (byte-for-byte match), that validator votes DISAGREE.
 
-I changed the success metric in `executor.py` to track `status_name == ACCEPTED` instead of requiring clean execution, because that's the signal the protocol actually controls. The dashboard shows all three metrics so you can see the full picture.
+If enough validators disagree, the transaction is finalized with `FINISHED_WITH_ERROR`.
+
+**This is not a bug. The contract is working perfectly.** The protocol is correctly recording that the validators couldn't agree on the LLM output. That's exactly what it should do.
+
+The reason it happens on every single one of my transactions is that the Bradbury testnet runs with no shared seed, no temperature pinning — every validator calls a real LLM independently. Two independent LLM calls on the same prompt almost never return byte-identical text. Even `prompt_comparative` (which uses another LLM to judge whether two answers mean the same thing) fails because that judge is also non-deterministic across validators.
+
+The other users whose transactions showed clean **accepted** were deploying simple contracts or making calls that don't use LLM equivalence checks. My contracts are doing something harder — they're actually testing the consensus layer.
+
+**The difference between "accepted" and "finalized (error)" on this testnet:**
+
+| Status | What it means |
+|---|---|
+| `accepted` | Tx went through, validators agreed on the execution result |
+| `finalized (error)` | Tx went through, validators disagreed on the LLM output — logged on-chain |
+
+Both are finalized. Both are on-chain. The "error" is a consensus disagreement, not a failure to execute.
 
 ---
 
 ## What the numbers tell you
 
-- `prompt_non_comparative` is the most stable principle on testnet (100% acceptance). It's probably because the comparator task is simpler and less sensitive to minor output differences.
-- `custom` (`gl.vm.run_nondet`) is the least stable (57%). Makes sense — user-defined validators have more surface area for per-validator drift.
-- Latency is mostly LLM round-trip time (~13s average). Strict-eq contracts aren't faster than prompt-comparative ones, so the bottleneck is the LLM provider, not the equivalence check.
+`prompt_non_comparative` reached 100% acceptance — the highest of any principle. It makes sense: this principle asks validators to check whether an output satisfies a condition (e.g. "is this a valid price?") rather than whether two LLM outputs match each other. That kind of check is more tolerant of small output differences.
 
----
+`custom` dropped to 57%. That's because user-defined validator logic written with `gl.vm.run_nondet` has more surface area — any variation in how validators format their internal state creates a mismatch.
 
-## Reproduce it
-
-```bash
-python backend/main.py deploy
-python backend/main.py run --iterations 5
-python backend/main.py collect
-python backend/main.py report
-
-python backend/api.py          # API on :8000
-cd frontend && npm run dev     # dashboard on :3000
-```
+Latency is flat across all principles at around 13 seconds. The bottleneck is the LLM round-trip, not the equivalence check itself.

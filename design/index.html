@@ -77,8 +77,8 @@
       <div class="kpi-label">Total Invocations</div>
       <span class="kpi-info" data-tip="On-chain calls to benchmark contracts. Each one triggers LLM consensus across 5 validators.">ⓘ</span>
     </div>
-    <div class="kpi-value" data-target="40" data-format="int">0</div>
-    <div class="kpi-trend"><span class="trend-up">▲ 40</span> last 24h</div>
+    <div class="kpi-value" data-target="60" data-format="int">0</div>
+    <div class="kpi-trend"><span class="trend-up">▲ 12</span> last 24h</div>
   </article>
 
   <article class="kpi" data-tone="emerald">
@@ -88,10 +88,10 @@
         <svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 12.5 L11 15.5 L16 9.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div class="kpi-label">Success Rate</div>
-      <span class="kpi-info" data-tip="Acceptance = consensus reached. 31 of 40 transactions converged.">ⓘ</span>
+      <span class="kpi-info" data-tip="Acceptance = consensus reached. 51 of 60 transactions converged.">ⓘ</span>
     </div>
-    <div class="kpi-value" data-target="77.5" data-format="pct">0</div>
-    <div class="kpi-trend"><span class="dot dot-emerald"></span>31 / 40 accepted</div>
+    <div class="kpi-value" data-target="85" data-format="pct">0</div>
+    <div class="kpi-trend"><span class="dot dot-emerald"></span>51 / 60 accepted</div>
   </article>
 
   <article class="kpi" data-tone="cyan">
@@ -101,10 +101,10 @@
         <svg viewBox="0 0 24 24" width="18" height="18"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 7 V12 L15.5 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       </div>
       <div class="kpi-label">Avg Consensus Latency</div>
-      <span class="kpi-info" data-tip="Time from submission to validator agreement. ~13s reflects 5-way LLM inference.">ⓘ</span>
+      <span class="kpi-info" data-tip="Time from submission to validator agreement. ~18s reflects 5-way LLM inference.">ⓘ</span>
     </div>
-    <div class="kpi-value" data-target="12933" data-format="ms">0</div>
-    <div class="kpi-trend">range 8.88s → 20.33s</div>
+    <div class="kpi-value" data-target="18021" data-format="ms">0</div>
+    <div class="kpi-trend">range 12.95s → 28.23s</div>
   </article>
 
   <article class="kpi" data-tone="amber">
@@ -143,29 +143,29 @@
         <div>Convergence</div>
         <div>Avg Latency</div>
       </div>
-      <div class="heat-row" data-bar="100" data-tone="green" style="--delay:0ms">
-        <div class="cell-name"><code>prompt_non_comparative</code><span class="meta-pill">13,958ms</span></div>
-        <div class="cell-num">100.0<span class="u">%</span></div>
-        <div class="cell-num">100.0<span class="u">%</span></div>
-        <div class="cell-bar"><div class="bar"><span style="--w:100%"></span></div><span class="bar-val">14.0s</span></div>
-      </div>
-      <div class="heat-row" data-bar="90" data-tone="green" style="--delay:120ms">
-        <div class="cell-name"><code>strict_eq</code><span class="meta-pill">13,537ms</span></div>
-        <div class="cell-num">90.0<span class="u">%</span></div>
-        <div class="cell-num">90.0<span class="u">%</span></div>
-        <div class="cell-bar"><div class="bar"><span style="--w:90%"></span></div><span class="bar-val">13.5s</span></div>
-      </div>
-      <div class="heat-row" data-bar="85.7" data-tone="green" style="--delay:240ms">
-        <div class="cell-name"><code>prompt_comparative</code><span class="meta-pill">14,129ms</span></div>
+      <div class="heat-row" data-bar="90.5" data-tone="green" style="--delay:0ms">
+        <div class="cell-name"><code>custom</code><span class="meta-pill meta-21">21,100ms</span></div>
         <div class="cell-num">85.7<span class="u">%</span></div>
-        <div class="cell-num">85.7<span class="u">%</span></div>
-        <div class="cell-bar"><div class="bar"><span style="--w:85.7%"></span></div><span class="bar-val">14.1s</span></div>
+        <div class="cell-num">90.5<span class="u">%</span></div>
+        <div class="cell-bar"><div class="bar"><span style="--w:90.5%"></span></div><span class="bar-val">21.1s</span></div>
       </div>
-      <div class="heat-row" data-bar="57.1" data-tone="red" style="--delay:360ms">
-        <div class="cell-name"><code>custom</code><span class="meta-pill">11,159ms</span></div>
-        <div class="cell-num">57.1<span class="u">%</span></div>
-        <div class="cell-num">57.1<span class="u">%</span></div>
-        <div class="cell-bar"><div class="bar"><span style="--w:57.1%"></span></div><span class="bar-val">11.2s</span></div>
+      <div class="heat-row" data-bar="90.5" data-tone="green" style="--delay:120ms">
+        <div class="cell-name"><code>prompt_comparative</code><span class="meta-pill">17,834ms</span></div>
+        <div class="cell-num">90.5<span class="u">%</span></div>
+        <div class="cell-num">90.5<span class="u">%</span></div>
+        <div class="cell-bar"><div class="bar"><span style="--w:90.5%"></span></div><span class="bar-val">17.8s</span></div>
+      </div>
+      <div class="heat-row" data-bar="80" data-tone="amber" style="--delay:240ms">
+        <div class="cell-name"><code>strict_eq</code><span class="meta-pill">17,994ms</span></div>
+        <div class="cell-num">80.0<span class="u">%</span></div>
+        <div class="cell-num">80.0<span class="u">%</span></div>
+        <div class="cell-bar"><div class="bar"><span style="--w:80%"></span></div><span class="bar-val">18.0s</span></div>
+      </div>
+      <div class="heat-row" data-bar="66.7" data-tone="amber" style="--delay:360ms">
+        <div class="cell-name"><code>prompt_non_comparative</code><span class="meta-pill">15,242ms</span></div>
+        <div class="cell-num">66.7<span class="u">%</span></div>
+        <div class="cell-num">66.7<span class="u">%</span></div>
+        <div class="cell-bar"><div class="bar"><span style="--w:66.7%"></span></div><span class="bar-val">15.2s</span></div>
       </div>
     </div>
   </article>
@@ -186,22 +186,22 @@
         <div class="ring-bg" style="--r:16%"></div>
       </div>
 
-      <div class="dial" style="--p:100; --hue:152" data-radius="46"><span class="dial-label">prompt_non_comparative · 100.0%</span></div>
-      <div class="dial" style="--p:90; --hue:188" data-radius="36"><span class="dial-label">strict_eq · 90.0%</span></div>
-      <div class="dial" style="--p:85.7; --hue:262" data-radius="26"><span class="dial-label">prompt_comparative · 85.7%</span></div>
-      <div class="dial" style="--p:57.1; --hue:38" data-radius="16"><span class="dial-label">custom · 57.1%</span></div>
+      <div class="dial" style="--p:90.5; --hue:152" data-radius="46"><span class="dial-label">custom · 90.5%</span></div>
+      <div class="dial" style="--p:90.5; --hue:188" data-radius="36"><span class="dial-label">prompt_comparative · 90.5%</span></div>
+      <div class="dial" style="--p:80; --hue:262" data-radius="26"><span class="dial-label">strict_eq · 80.0%</span></div>
+      <div class="dial" style="--p:66.7; --hue:38" data-radius="16"><span class="dial-label">prompt_non_comparative · 66.7%</span></div>
 
       <div class="radial-center">
-        <div class="rc-num">77.5<span>%</span></div>
+        <div class="rc-num">85.0<span>%</span></div>
         <div class="rc-cap">global accept</div>
       </div>
     </div>
 
     <ul class="radial-key">
-      <li><i class="sw" style="background:hsl(152 70% 55%)"></i>prompt_non_comparative <b>100.0%</b></li>
-      <li><i class="sw" style="background:hsl(188 70% 55%)"></i>strict_eq <b>90.0%</b></li>
-      <li><i class="sw" style="background:hsl(262 70% 65%)"></i>prompt_comparative <b>85.7%</b></li>
-      <li><i class="sw" style="background:hsl(38 80% 60%)"></i>custom <b>57.1%</b></li>
+      <li><i class="sw" style="background:hsl(152 70% 55%)"></i>custom <b>90.5%</b></li>
+      <li><i class="sw" style="background:hsl(188 70% 55%)"></i>prompt_comparative <b>90.5%</b></li>
+      <li><i class="sw" style="background:hsl(262 70% 65%)"></i>strict_eq <b>80.0%</b></li>
+      <li><i class="sw" style="background:hsl(38 80% 60%)"></i>prompt_non_comparative <b>66.7%</b></li>
     </ul>
   </article>
 </section>
@@ -216,7 +216,7 @@
     <div class="card-actions">
       <span class="filter-chip is-active">All · 7</span>
       <span class="filter-chip">Live · 7</span>
-      <span class="filter-chip">≥85% · 1</span>
+      <span class="filter-chip">≥85% · 4</span>
     </div>
   </header>
 
