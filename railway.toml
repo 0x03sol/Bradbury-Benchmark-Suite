@@ -1,6 +1,6 @@
 [build]
-builder = "nixpacks"
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "cd backend && gunicorn -b 0.0.0.0:$PORT -w 2 --timeout 120 api:app"
 restartPolicyType = "on_failure"
